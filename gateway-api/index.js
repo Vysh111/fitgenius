@@ -18,16 +18,31 @@ app.get("/api/v1/health", (req, res) => {
 });
 
 // TEMP: Workout creation endpoint (will forward later)
-app.post("/api/v1/workouts", (req, res) => {
-  console.log("Received workout request:", req.body);
+const axios = require("axios");
 
-  res.json({
-    message: "Gateway received workout request",
-    receivedAt: new Date().toISOString()
-  });
+app.post("/api/v1/workouts", async (req, res) => {
+  try {
+    console.log("Gateway: forwarding request to Spring Boot");
+
+    const response = await axios.post(
+      "http://localhost:8080/api/v1/workouts",
+      req.body
+    );
+
+    res.json(response.data);
+
+  } catch (error) {
+    console.error("Gateway error:", error.message);
+
+    res.status(502).json({
+      error: "Bad Gateway",
+      message: "Analytics service unavailable"
+    });
+  }
 });
 
 // Start server
 app.listen(PORT, () => {
   console.log(`🚪 API Gateway running on http://localhost:${PORT}`);
 });
+
