@@ -31,14 +31,24 @@ app.post("/api/v1/workouts", async (req, res) => {
 
     res.json(response.data);
 
-  } catch (error) {
-    console.error("Gateway error:", error.message);
-
-    res.status(502).json({
-      error: "Bad Gateway",
-      message: "Analytics service unavailable"
-    });
   }
+   catch (error) {
+     console.error("Gateway error:", error.message);
+
+     // If Spring Boot responded with an error (like 400)
+     if (error.response) {
+       return res
+         .status(error.response.status)
+         .json(error.response.data);
+     }
+
+     // If Spring Boot is unreachable
+     res.status(502).json({
+       error: "Bad Gateway",
+       message: "Analytics service unavailable"
+     });
+   }
+
 });
 
 // Start server
